@@ -11,7 +11,7 @@ def render():
     event = get_event(booking["event_id"])
     if st.button("← Back to my bookings", key="booking_back"):
         go("bookings")
-    st.markdown("<div class='tiny-gap'></div><div class='ticket'>", unsafe_allow_html=True)
+    st.markdown("<div class='tiny-gap'></div>", unsafe_allow_html=True)
     top, image_col = st.columns([1.6, 0.8], gap="large")
     with top:
         st.markdown(
@@ -40,4 +40,3 @@ def render():
             if st.button("Cancel booking", key="detail_cancel", use_container_width=True):
                 booking["status"] = "Cancelled"
                 st.rerun()
-        st.markdown("<p class='secure-note'>Cancellation is a local state change in this frontend-only demonstration.</p>", unsafe_allow_html=True)
