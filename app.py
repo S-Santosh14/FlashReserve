@@ -1,9 +1,15 @@
-from pathlib import Path
 import streamlit as st
 
 from frontend.components.footer import render_footer
 from frontend.components.navbar import render_navbar
+from frontend.utils.api import APIError, login_user, register_user
+from frontend.styles import inject_premium_styles
 from frontend.pages import (
+    admin_bookings,
+    admin_dashboard,
+    admin_events,
+    admin_seats,
+    admin_users,
     booking_details,
     bookings,
     checkout,
@@ -83,6 +89,52 @@ def inject_styles():
         .site-footer { margin-top:4rem; padding:1.35rem 0 0; border-top:1px solid var(--line); display:grid; grid-template-columns:1.35fr 1.5fr .8fr; align-items:end; color:var(--muted); }.footer-brand { color:var(--ink); letter-spacing:.08em; font-size:11px; font-weight:800; }.site-footer p { font-size:10px; margin:.34rem 0 0; }.footer-links { display:flex; gap:1rem; font-size:10px; justify-content:center; }.footer-copy { font-size:10px; text-align:right; }
         [data-testid="stForm"] { border:1px solid var(--line); border-radius:12px; background:var(--panel); padding:1.35rem; }.login-shell { margin-top:9vh; text-align:center; }.login-brand { font-size:13px; font-weight:800; letter-spacing:.09em; }.login-title { font-size:37px; margin:.85rem 0 .35rem; letter-spacing:-.055em; }.login-copy { color:var(--muted); font-size:13px; margin-bottom:1.4rem; }.login-hint { margin-top:1rem; color:var(--muted); font-size:10px; }.login-hint b { color:var(--ink-soft); }
         @media (max-width: 760px) { .block-container{padding:1rem 1rem 2rem !important;} .brand{font-size:11px;}.nav-space{height:.7rem}.hero{margin-top:1.55rem}.hero h1{font-size:40px}.page-intro h1{font-size:34px}.detail-summary h1{font-size:37px}.section-head{display:block}.section-head span{display:block;margin-top:.3rem}.editorial-note{display:block}.editorial-note p{margin:.45rem 0}.site-footer{grid-template-columns:1fr;gap:.8rem}.footer-links{justify-content:flex-start}.footer-copy{text-align:left}.seat-area{padding:.9rem .5rem}.summary-card{padding:1rem}.confirmation{margin-top:2.2rem}.ticket{padding:1.15rem}.ticket h1{font-size:31px;} }
+        .breadcrumb { color:var(--muted); font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.04em; margin:-.25rem 0 1rem; }
+        .breadcrumb span { color:var(--blue); padding:0 .35rem; }
+        .login-shell { padding:2rem 1.7rem 1.5rem; border:1px solid var(--line); border-radius:16px; background:rgba(255,255,255,.92); box-shadow:0 18px 45px rgba(19,37,63,.09); }
+        .login-shell .login-title { color:var(--ink); }
+        .login-shell .login-copy { color:var(--muted); }
+        .login-tabs [data-baseweb="tab-list"] { justify-content:center; }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def inject_admin_styles():
+    st.markdown(
+        """
+        <style>
+        .stApp { background:#eef3f8; }
+        .admin-brand { padding-top:.55rem; color:#13253f; }
+        .admin-brand small { color:#1769e0; font-family:'DM Mono',monospace; font-size:9px; letter-spacing:.14em; margin-left:.35rem; }
+        .admin-rule { height:1px; background:#dce3ea; margin:.65rem 0 1.4rem; }
+        [data-testid="stMarkdownContainer"] h1,
+        [data-testid="stMarkdownContainer"] h2,
+        [data-testid="stMarkdownContainer"] h3,
+        [data-testid="stMarkdownContainer"] p { color:#13253f !important; }
+        [data-testid="stMarkdownContainer"] h1 { font-size:42px !important; font-weight:800 !important; margin-bottom:.45rem !important; }
+        [data-testid="stMarkdownContainer"] h2 { font-size:24px !important; font-weight:800 !important; }
+        [data-testid="stMarkdownContainer"] h3 { font-size:17px !important; font-weight:800 !important; margin-bottom:.8rem !important; }
+        [data-testid="stSidebar"] { background:#13253f; border-right:0; }
+        [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h2,
+        [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p,
+        [data-testid="stSidebar"] [data-testid="stCaptionContainer"] p { color:#f7fbff !important; }
+        [data-testid="stSidebar"] [data-testid="stCaptionContainer"] p { opacity:.7; }
+        [data-testid="stSidebar"] hr { border-color:rgba(255,255,255,.18); }
+        [data-testid="stSidebar"] .stButton > button { color:#e8f0f8; border-color:rgba(255,255,255,.16); background:transparent; text-align:left; }
+        [data-testid="stSidebar"] .stButton > button:hover { color:#fff; border-color:#6ca9ff; background:rgba(255,255,255,.08); }
+        [data-testid="stSidebar"] .stButton > button[kind="primary"] { color:#fff; background:#1769e0; border-color:#1769e0; }
+        [data-testid="stMetric"] { background:#fff; border:1px solid #dce3ea; border-radius:12px; padding:1rem 1.1rem; box-shadow:0 8px 20px rgba(19,37,63,.05); min-height:104px; }
+        [data-testid="stMetricLabel"] p { color:#6f7b8d !important; font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.08em; text-transform:uppercase; }
+        [data-testid="stMetricValue"] { color:#13253f !important; font-weight:800; }
+        [data-testid="stMetricDelta"] { color:#16825d !important; }
+        [data-testid="stForm"] { background:#fff; border:1px solid #dce3ea; border-radius:12px; box-shadow:0 8px 20px rgba(19,37,63,.04); }
+        [data-testid="stTabs"] [data-baseweb="tab-list"] { background:#fff; border:1px solid #dce3ea; border-radius:10px 10px 0 0; padding:0 .8rem; }
+        [data-testid="stTabs"] [data-baseweb="tab"] { color:#6f7b8d; }
+        [data-testid="stTabs"] [aria-selected="true"] { color:#1769e0 !important; }
+        [data-testid="stDataFrame"] { border:1px solid #dce3ea; border-radius:10px; overflow:hidden; }
+        [data-testid="stCaptionContainer"] p { color:#6f7b8d !important; }
         </style>
         """,
         unsafe_allow_html=True,
@@ -92,40 +144,75 @@ def inject_styles():
 def login_screen():
     _, center, _ = st.columns([1.1, 1.55, 1.1])
     with center:
-        st.markdown("<div class='login-shell'><div class='login-brand'><span class='brand-mark'></span>FLASHRESERVE</div><h1 class='login-title'>Welcome back</h1><p class='login-copy'>Reserve your next experience.</p></div>", unsafe_allow_html=True)
-        sign_in, register = st.tabs(["Sign in", "Register"])
+        st.markdown("<div class='login-shell'><div class='login-brand'><span class='brand-mark'></span>FLASHRESERVE</div><h1 class='login-title'>Your next night out starts here.</h1><p class='login-copy'>Discover live events, choose your seats, and reserve the moment.</p></div>", unsafe_allow_html=True)
+        sign_in, register = st.tabs(["SIGN IN", "CREATE ACCOUNT"])
         with sign_in:
             with st.form("login_form"):
-                username = st.text_input("Username", placeholder="")
+                email = st.text_input("Email", placeholder="you@example.com")
                 password = st.text_input("Password", type="password", placeholder="")
                 submitted = st.form_submit_button("Sign in", type="primary", use_container_width=True)
             if submitted:
-                if username == "santosh" and password == "1234":
-                    st.session_state.logged_in = True
-                    st.session_state.username = username
-                    go("home")
+                if not email or not password:
+                    st.error("Enter your email and password.")
                 else:
-                    st.error("Try the demo account: santosh / 1234")
-            st.markdown("<div class='login-hint'>Demo credentials: <b>santosh</b> / <b>1234</b></div>", unsafe_allow_html=True)
+                    try:
+                        result = login_user(email, password)
+                    except APIError as error:
+                        st.error(error.message)
+                    else:
+                        user = result["user"]
+                        st.session_state.logged_in = True
+                        st.session_state.auth_token = result["token"]
+                        st.session_state.user = user
+                        st.session_state.username = user["name"]
+                        st.session_state.role = user.get("role", "customer")
+                        go("admin_dashboard" if st.session_state.role == "admin" else "home")
+            st.markdown("<div class='login-hint'>Sign in with your FlashReserve account.</div>", unsafe_allow_html=True)
         with register:
             with st.form("register_form"):
                 name = st.text_input("Your name", placeholder="Your name")
                 email = st.text_input("Email", placeholder="you@example.com")
                 new_password = st.text_input("Create password", type="password")
+                confirm_password = st.text_input("Confirm password", type="password")
                 registered = st.form_submit_button("Create account", type="primary", use_container_width=True)
             if registered:
-                if name and email and new_password:
-                    st.session_state.logged_in = True
-                    st.session_state.username = name.split()[0].lower()
-                    go("home")
-                st.error("Please complete all fields.")
+                if not name or not email or not new_password or not confirm_password:
+                    st.error("Please complete all fields.")
+                elif new_password != confirm_password:
+                    st.error("Passwords do not match.")
+                else:
+                    try:
+                        result = register_user(name, email, new_password)
+                    except APIError as error:
+                        st.error(error.message)
+                    else:
+                        user = result["user"]
+                        st.session_state.logged_in = True
+                        st.session_state.auth_token = result["token"]
+                        st.session_state.user = user
+                        st.session_state.username = user["name"]
+                        st.session_state.role = user.get("role", "customer")
+                        go("home")
 
 
 def app():
     initialize_session()
     inject_styles()
+    inject_premium_styles()
     if not st.session_state.logged_in:
         login_screen()
+        return
+    if st.session_state.role == "admin":
+        inject_admin_styles()
+        inject_premium_styles()
+        admin_routes = {
+            "admin_dashboard": admin_dashboard.render,
+            "admin_events": admin_events.render,
+            "admin_seats": admin_seats.render,
+            "admin_bookings": admin_bookings.render,
+            "admin_users": admin_users.render,
+        }
+        admin_routes.get(st.session_state.current_page, admin_dashboard.render)()
         return
     page = st.session_state.current_page
     render_navbar(page)
