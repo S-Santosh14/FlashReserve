@@ -1,6 +1,7 @@
 import streamlit as st
 
-from frontend.data.dummy_data import SUPPORT_ANSWERS
+from frontend.utils.api import APIError, ask_chat
+from frontend.utils.navigation import breadcrumb, page_header
 
 
 SUGGESTIONS = [
@@ -11,26 +12,24 @@ SUGGESTIONS = [
 ]
 
 
-def _reply_for(text):
-    lowered = text.lower()
-    if "cancel" in lowered:
-        return SUPPORT_ANSWERS["cancel"]
-    if "seat" in lowered or "available" in lowered:
-        return SUPPORT_ANSWERS["seats"] if "available" in lowered else SUPPORT_ANSWERS["seat"]
-    if "booking" in lowered or "find" in lowered:
-        return SUPPORT_ANSWERS["booking"]
-    return "I can help with bookings, seating and cancellation. Try one of the suggested questions, or ask about your reservation."
-
-
 def _append_exchange(message):
-    st.session_state.support_messages.extend([
-        {"role": "user", "content": message},
-        {"role": "assistant", "content": _reply_for(message)},
-    ])
+    try:
+        result = ask_chat(message, st.session_state.auth_token, st.session_state.selected_event)
+    except APIError as error:
+        st.session_state.support_messages.extend([
+            {"role": "user", "content": message},
+            {"role": "assistant", "content": error.message},
+        ])
+    else:
+        st.session_state.support_messages.extend([
+            {"role": "user", "content": message},
+            {"role": "assistant", "content": result["response"]},
+        ])
 
 
 def render():
-    st.markdown("<div class='page-intro compact'><span class='eyebrow'>WE'RE HERE TO HELP</span><h1>FlashReserve Support</h1><p>Questions about your booking? Start with a quick answer below.</p></div>", unsafe_allow_html=True)
+    page_header("WE'RE HERE TO HELP", "FlashReserve Support", "Questions about your booking? Start with a quick answer below.", "← Home", "home", "🏠 Home", "home")
+    breadcrumb(["Home", "Support"])
     #st.markdown("<div class='support-shell'>", unsafe_allow_html=True)
     if not st.session_state.support_messages:
         st.markdown("<div class='support-welcome'><span class='support-avatar'>FR</span><div><b>FlashReserve Support</b><p>We usually reply instantly in this prototype.</p></div></div>", unsafe_allow_html=True)

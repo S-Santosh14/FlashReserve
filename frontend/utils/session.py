@@ -1,21 +1,23 @@
-"""A deliberately small state layer; replace local writes with gRPC calls later."""
+"""Streamlit session state for the REST-backed frontend."""
 
 import copy
 import streamlit as st
-
-from frontend.data.dummy_data import INITIAL_BOOKINGS
 
 
 DEFAULTS = {
     "logged_in": False,
     "username": "",
+    "user": None,
+    "role": "",
+    "auth_token": "",
     "current_page": "home",
-    "selected_event": "techfest",
+    "selected_event": None,
     "selected_seats": [],
     "booking": None,
-    "selected_booking_id": "FR-2847391",
+    "selected_booking_id": None,
     "payment_status": "idle",
-    "bookings": copy.deepcopy(INITIAL_BOOKINGS),
+    "bookings": [],
+    "events": [],
     "support_messages": [],
     "event_category": "All",
 }
@@ -25,6 +27,8 @@ def initialize_session():
     for key, value in DEFAULTS.items():
         if key not in st.session_state:
             st.session_state[key] = copy.deepcopy(value)
+    if st.session_state.logged_in and not st.session_state.auth_token:
+        st.session_state.logged_in = False
 
 
 def go(page: str, **values):
@@ -34,10 +38,11 @@ def go(page: str, **values):
     st.rerun()
 
 
-def currency(value: int) -> str:
-    return f"₹{value:,}"
+def currency(value) -> str:
+    return f"₹{int(value or 0):,}"
 
 
 def event_for_booking(booking):
-    from frontend.data.dummy_data import get_event
-    return get_event(booking["event_id"])
+    if booking.get("event"):
+        return booking["event"]
+    return next((event for event in st.session_state.events if event["id"] == booking.get("event_id")), None)

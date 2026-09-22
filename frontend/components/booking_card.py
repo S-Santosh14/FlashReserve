@@ -1,13 +1,18 @@
 import streamlit as st
 
+from frontend.components.poster import render_poster
+from frontend.utils.api import APIError, cancel_booking
 from frontend.utils.session import currency, event_for_booking, go
 
 
 def render_booking_card(booking, key_prefix="booking"):
     event = event_for_booking(booking)
+    if not event:
+        st.error("The event for this booking is no longer available.")
+        return
     left, right = st.columns([1.15, 2.6], gap="medium")
     with left:
-        st.image(event["image"], use_container_width=True)
+        render_poster(event, key=f"booking-card-{booking['id']}")
     with right:
         st.markdown(
             f"""
@@ -26,7 +31,12 @@ def render_booking_card(booking, key_prefix="booking"):
         if booking["status"] == "Confirmed":
             with cancel_col:
                 if st.button("Cancel", key=f"{key_prefix}_cancel_{booking['id']}", use_container_width=True):
-                    for item in st.session_state.bookings:
-                        if item["id"] == booking["id"]:
-                            item["status"] = "Cancelled"
-                    st.rerun()
+                    try:
+                        updated = cancel_booking(booking["id"], st.session_state.auth_token)
+                    except APIError as error:
+                        st.error(error.message)
+                    else:
+                        for index, item in enumerate(st.session_state.bookings):
+                            if item["id"] == booking["id"]:
+                                st.session_state.bookings[index] = updated
+                        st.rerun()

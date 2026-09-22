@@ -1,10 +1,18 @@
 import streamlit as st
 
 from frontend.components.booking_card import render_booking_card
+from frontend.utils.api import APIError, get_bookings
+from frontend.utils.navigation import breadcrumb, page_header
 
 
 def render():
-    st.markdown("<div class='page-intro compact'><span class='eyebrow'>YOUR PLANS</span><h1>My bookings</h1><p>Everything you have reserved, in one place.</p></div>", unsafe_allow_html=True)
+    try:
+        st.session_state.bookings = get_bookings(st.session_state.auth_token)
+    except APIError as error:
+        st.error(error.message)
+        return
+    page_header("YOUR PLANS", "My bookings", "Everything you have reserved, in one place.", "← Home", "home", "🏠 Home", "home")
+    breadcrumb(["Home", "My Bookings"])
     tabs = st.tabs(["Upcoming", "Past", "Cancelled"])
     groups = [
         [item for item in st.session_state.bookings if item["status"] == "Confirmed"],
