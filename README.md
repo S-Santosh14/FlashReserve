@@ -2,248 +2,374 @@
 
 Distributed Ticket Booking System
 
-Milestone 1: Project Foundation, gRPC & LLM Integration
-● Real-time seat reservation with concurrency control to prevent race conditions.
-● Payment processing (mock/stub service acceptable).
-● LLM Integration: Customer support chatbot for FAQs (e.g., "How to cancel a booking?", "What seats are available? Etc.").
+FlashReserve is a distributed ticket booking system developed as an AOS project. It provides a simple interface for discovering events, selecting seats, booking tickets, making mock payments, managing bookings, and getting customer support through an LLM service.
 
-## Run
+## Features
 
-```powershell
-cd outputs\flashreserve
-python -m pip install -r requirements.txt
-streamlit run app.py
-```
+* User registration and login
+* Browse and search events
+* Event details and posters
+* Interactive seat selection
+* Real-time seat reservation
+* Concurrency control for simultaneous bookings
+* 30-second reservation timeout
+* Mock payment processing
+* Booking history
+* Booking cancellation
+* Customer support chatbot
+* Admin dashboard
+* Admin user, event, booking and seat management
+* MongoDB database
+* REST API using Node.js and Express
+* gRPC communication with the Python LLM service
 
-Use the demo sign-in: `santosh` / `1234`.
+## Technologies Used
 
-## Included demo flow
+* **Frontend:** Python, Streamlit
+* **Backend:** Node.js, Express.js
+* **Database:** MongoDB
+* **Communication:** REST API, gRPC
+* **LLM Service:** Python
+* **Authentication:** JWT
+* **Password Security:** bcrypt
 
-Sign in → discover/search → event details → native clickable seat map → summary → mock payment → confirmation → booking details/cancellation.
-
-
-# FlashReserve
-
-Distributed ticket booking system with a Streamlit customer UI, an Express/MongoDB backend, and a Python gRPC customer-support service.
-
-## Project Tree
+## Project Structure
 
 ```text
 FlashReserve/
+│
 ├── app.py
 ├── requirements.txt
+├── README.md
+├── .gitignore
+│
 ├── frontend/
 │   ├── components/
+│   │   ├── admin_nav.py
+│   │   ├── booking_card.py
+│   │   ├── event_card.py
+│   │   ├── footer.py
+│   │   ├── navbar.py
+│   │   ├── poster.py
+│   │   └── seat_map.py
+│   │
+│   ├── data/
+│   │   └── dummy_data.py
+│   │
 │   ├── pages/
+│   │   ├── home.py
+│   │   ├── events.py
+│   │   ├── event_details.py
+│   │   ├── seats.py
+│   │   ├── checkout.py
+│   │   ├── payment.py
+│   │   ├── confirmation.py
+│   │   ├── bookings.py
+│   │   ├── booking_details.py
+│   │   ├── profile.py
+│   │   ├── support.py
+│   │   ├── admin_dashboard.py
+│   │   ├── admin_users.py
+│   │   ├── admin_events.py
+│   │   ├── admin_seats.py
+│   │   └── admin_bookings.py
+│   │
+│   ├── pictures/
+│   ├── styles.py
+│   │
 │   └── utils/
+│       ├── api.py
+│       ├── navigation.py
+│       └── session.py
+│
 ├── backend/
 │   ├── server.js
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── .env
+│   │
 │   ├── config/
-│   ├── models/
-│   ├── routes/
+│   │   └── db.js
+│   │
 │   ├── controllers/
+│   │   ├── adminController.js
+│   │   ├── authController.js
+│   │   ├── bookingController.js
+│   │   ├── chatController.js
+│   │   ├── eventController.js
+│   │   ├── paymentController.js
+│   │   └── seatController.js
+│   │
+│   ├── grpc/
+│   │   ├── llm.proto
+│   │   └── llmClient.js
+│   │
 │   ├── middleware/
-│   └── grpc/llm.proto
+│   │   ├── adminMiddleware.js
+│   │   └── authMiddleware.js
+│   │
+│   ├── models/
+│   │   ├── Booking.js
+│   │   ├── Event.js
+│   │   ├── Payment.js
+│   │   ├── Seat.js
+│   │   └── User.js
+│   │
+│   ├── routes/
+│   │   ├── adminRoutes.js
+│   │   ├── authRoutes.js
+│   │   ├── bookingRoutes.js
+│   │   ├── chatRoutes.js
+│   │   ├── eventRoutes.js
+│   │   ├── paymentRoutes.js
+│   │   └── seatRoutes.js
+│   │
+│   ├── uploads/
+│   │
+│   └── utils/
+│       ├── asyncHandler.js
+│       ├── seedAdmins.js
+│       └── validation.js
+│
 └── llm/
-		├── llm_service.py
-		├── llm_prototype.ipynb
-		├── requirements.txt
-		└── proto/
-				└── llm.proto
+    ├── llm_service.py
+    ├── llm_prototype.ipynb
+    ├── requirements.txt
+    │
+    └── proto/
+        ├── llm.proto
+        ├── llm_pb2.py
+        └── llm_pb2_grpc.py
 ```
-
-## Services
-
-1. MongoDB stores users, events, seats, bookings, and payments.
-2. Node.js/Express exposes the REST API and owns authentication, authorization, booking, payment, and MongoDB access.
-3. The Python LLM service listens on gRPC at `127.0.0.1:50051` by default.
-4. Streamlit calls Node over HTTP. Node calls the Python chatbot over gRPC for support questions.
-
-The chatbot is intentionally small for Milestone 1. FAQ answers are deterministic. Dynamic events, seats, and bookings are queried by Node and passed as request context; the Python service does not invent those values.
-
-## Configuration
-
-Keep the existing `backend/.env` file. It contains `PORT`, `MONGODB_URI`, and `JWT_SECRET`.
-
-Optional values:
-
-```text
-FLASHRESERVE_API_URL=http://localhost:5000
-LLM_GRPC_ADDRESS=127.0.0.1:50051
-LLM_GRPC_HOST=127.0.0.1
-LLM_GRPC_PORT=50051
-```
-
-Do not commit secrets or replace the existing environment file.
 
 ## Installation
 
-Backend:
+Open the extracted `FlashReserve` folder in **VS Code**.
+
+Make sure Python, Node.js and MongoDB are available on the system.
+
+### Backend
+
+Open a terminal in VS Code:
 
 ```powershell
 cd backend
 npm install
 ```
 
-Streamlit and REST client:
+### Streamlit
+
+Open another terminal in the main `FlashReserve` folder:
 
 ```powershell
 python -m pip install -r requirements.txt
 ```
 
-Python gRPC service:
+### LLM Service
+
+Install the Python packages required by the LLM service:
 
 ```powershell
 python -m pip install -r llm/requirements.txt
 ```
 
-## Start All Services
+## Running the Project
 
-Start MongoDB using the local service or MongoDB Atlas configured by `MONGODB_URI`.
+The complete application uses three terminals.
 
-Terminal 1, Node backend:
+### Terminal 1 – Frontend
+
+From the main `FlashReserve` folder:
+
+```powershell
+streamlit run app.py
+```
+
+### Terminal 2 – Backend
 
 ```powershell
 cd backend
 npm start
 ```
 
-Terminal 2, Python chatbot:
+The backend runs on port `5000`.
+
+### Terminal 3 – LLM Service
 
 ```powershell
-python llm/llm_service.py
+cd llm
+python llm_service.py
 ```
 
-Terminal 3, Streamlit:
+The LLM service runs through gRPC on port `50051`.
 
-```powershell
-python -m streamlit run app.py
-```
+Keep all three terminals running while using the application.
 
-Open `http://localhost:8501`.
-
-## REST APIs
+After Streamlit starts, open:
 
 ```text
-GET    /api/health
-
-POST   /api/auth/register
-POST   /api/auth/login
-
-GET    /api/events
-GET    /api/events/:id
-GET    /api/events/:eventId/seats
-POST   /api/events/:eventId/seats/reserve
-
-POST   /api/bookings
-GET    /api/bookings
-GET    /api/bookings/:id
-PUT    /api/bookings/:id/cancel
-
-POST   /api/payments/mock
-POST   /api/chat
-
-GET    /api/admin/users
-GET    /api/admin/bookings
-GET    /api/admin/events
-POST   /api/admin/events
-PUT    /api/admin/events/:id
-DELETE /api/admin/events/:id
+http://localhost:8501
 ```
 
-Protected endpoints use:
+## Application Flow
 
 ```text
-Authorization: Bearer <JWT>
+Register / Login
+       ↓
+Browse Events
+       ↓
+Search / Select Event
+       ↓
+Event Details
+       ↓
+Select Seats
+       ↓
+Reserve Seats
+       ↓
+Checkout
+       ↓
+Mock Payment
+       ↓
+Booking Confirmation
+       ↓
+My Bookings
+       ↓
+Cancellation
+       ↓
+Customer Support
 ```
-
-## Customer Flow
-
-Register and login return a JWT. Streamlit stores the token and basic user information in `st.session_state`, never the password.
-
-The customer flow is:
-
-```text
-Register
--> Login
--> Browse events
--> Event details
--> Select and reserve seats
--> Create booking
--> Mock payment
--> Confirmation and transaction ID
--> My Bookings
--> Cancellation
--> Support chatbot
-```
-
-Example chatbot request after login:
-
-```powershell
-curl -X POST http://localhost:5000/api/chat `
-	-H "Authorization: Bearer YOUR_JWT" `
-	-H "Content-Type: application/json" `
-	-d '{"message":"How do I cancel my booking?"}'
-```
-
-The response is JSON containing `data.response` and `data.status`.
 
 ## Admin Flow
 
-Seed three admin accounts intentionally:
+The project also contains an admin dashboard for managing the system.
 
-```powershell
-cd backend
-npm run seed:admins
+Admins can:
+
+* View users
+* View bookings
+* View events
+* Create events
+* Update events
+* Delete events
+* View event seats
+* Update seat status
+
+Admin pages are available through the admin section of the application.
+
+## Database
+
+MongoDB is used to store the application data.
+
+The main collections are:
+
+```text
+Users
+Events
+Seats
+Bookings
+Payments
 ```
 
-The script prompts for passwords and stores only bcrypt hashes. Admin JWTs can access user, booking, and event management APIs. There is no admin registration endpoint.
+The MongoDB connection is configured in the backend environment configuration.
 
-## Database Collections
+## LLM and gRPC
 
-- `users`: customer/admin accounts with bcrypt password hashes
-- `events`: title, category, venue, date, time, description, price, and seat count
-- `seats`: event seat number, availability, reservation owner, and reservation timestamp
-- `bookings`: customer, event, seats, amount, and status
-- `payments`: booking, customer, amount, mock transaction ID, and status
+FlashReserve contains a separate Python customer-support service.
+
+The communication works as follows:
+
+```text
+Streamlit
+    ↓
+Node.js / Express Backend
+    ↓
+gRPC
+    ↓
+Python LLM Service
+```
+
+The chatbot can answer questions related to:
+
+* Events
+* Seat availability
+* Ticket booking
+* Bookings
+* Cancellation
+* Payments
+
+The backend provides the current application information to the LLM service so that dynamic information such as events, seats and bookings can be handled using the application data.
 
 ## Seat Concurrency
 
-Reservation uses one atomic MongoDB `findOneAndUpdate` filtered by `status: "available"`. Only one concurrent request can transition a seat to `reserved`; competing requests receive HTTP `409`.
+FlashReserve includes concurrency control for ticket reservations.
 
-## Authentication
+When two users try to reserve the same seat at the same time, the backend uses an atomic database operation to make sure that the same seat cannot be successfully reserved by both users.
 
-Customers register with an email and password. Passwords are hashed with bcrypt. Login verifies the hash and returns a JWT signed with `JWT_SECRET`. Authentication middleware verifies the JWT, and admin middleware requires `role: "admin"`. Passwords and secrets are never returned or logged.
+A seat reservation is held for **30 seconds**. If the booking process is not completed within this period, the reservation can expire and the seat becomes available again.
 
-## gRPC Architecture
+## Testing Concurrency
 
-The shared contract is `llm/proto/llm.proto`, mirrored at `backend/grpc/llm.proto`.
+To demonstrate the concurrency handling:
+
+1. Open **two separate terminals** for the Streamlit frontend.
+2. Run the frontend in both terminals.
+3. Open the two frontend instances in separate browser windows.
+4. Login from both instances.
+5. Select the **same event and the same seat**.
+6. Try to reserve the seat from both windows at approximately the same time.
+
+The system handles the simultaneous requests and prevents both users from reserving the same seat.
+
+The competing reservation can remain blocked for **30 seconds** before the reservation timeout is reached.
+
+This demonstrates how FlashReserve handles simultaneous booking requests and prevents race conditions.
+
+## Mock Payment
+
+The project includes a mock payment system for testing the complete booking flow.
+
+The payment process is:
 
 ```text
-Streamlit POST /api/chat
-		-> Node chat controller
-		-> MongoDB context lookup
-		-> gRPC LLMService.AskQuestion
-		-> Python answer_question()
-		-> Node JSON response
-		-> Streamlit chat message
+Seat Reservation
+      ↓
+Create Booking
+      ↓
+Mock Payment
+      ↓
+Payment Success
+      ↓
+Booking Confirmation
 ```
 
-If the Python service is unavailable, Node returns HTTP `503` with a user-safe message. The booking system remains available.
+No real money is involved in the payment process.
 
-## Validation
+## Important
 
-The Stage 4 checks include:
+All three services should be running while testing the complete application:
 
-```powershell
-python -m compileall -q app.py frontend llm
-cd backend
-npm test
+```text
+Streamlit Frontend
+        ↓
+Node.js Backend
+        ↓
+MongoDB
+
+Node.js Backend
+        ↓
+Python gRPC LLM Service
 ```
 
-The Python gRPC service and Node client have also been tested with a real gRPC request and dynamic seat context.
+If the backend is stopped, booking and other API-based features will not work.
 
-## Remaining Scope
+If the Python LLM service is stopped, the customer-support chatbot will not work.
 
-LLM provider integration, gRPC streaming, RAG, and production deployment are intentionally outside Milestone 1. The current support service is a deterministic FAQ service with live application context.
+## Project Status
 
+The current version includes the main ticket booking workflow, frontend and backend integration, MongoDB connectivity, authentication, seat reservation, concurrency handling, mock payments, admin functionality, and the customer-support LLM service.
+
+## Team
+
+**FlashReserve – AOS Project**
+
+Developed as part of the **Advanced Operating Systems** course at **BITS Pilani**.
