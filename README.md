@@ -367,9 +367,3 @@ If the Python LLM service is stopped, the customer-support chatbot will not work
 ## Project Status
 
 The current version includes the main ticket booking workflow, frontend and backend integration, MongoDB connectivity, authentication, seat reservation, concurrency handling, mock payments, admin functionality, and the customer-support LLM service.
-
-## Team
-
-**FlashReserve – AOS Project**
-
-Developed as part of the **Advanced Operating Systems** course at **BITS Pilani**.
