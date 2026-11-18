@@ -1,0 +1,5 @@
+grpcio>=1.85.1,<2.0
+grpcio-tools>=1.85.1,<2.0
+protobuf>=7.35.1,<8.0
+python-dotenv>=1.0,<2.0
+groq>=0.9,<1.0

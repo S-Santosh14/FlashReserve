@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package flashreserve.support;
+
+message Question {
+  string text = 1;
+  string context = 2;
+}
+
+message Answer {
+  string response = 1;
+  bool success = 2;
+  string status = 3;
+}
+
+service LLMService {
+  rpc AskQuestion(Question) returns (Answer);
+}

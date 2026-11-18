@@ -1,0 +1,242 @@
+syntax = "proto3";
+
+package flashreserve.raft;
+
+// ==========================================
+// RAFT LOG ENTRY
+// ==========================================
+
+message LogEntry {
+
+    uint64 index = 1;
+
+    uint64 term = 2;
+
+    string command_type = 3;
+
+    bytes command_payload = 4;
+
+    string command_id = 5;
+}
+
+
+// ==========================================
+// REQUEST VOTE RPC
+// ==========================================
+
+message RequestVoteRequest {
+
+    uint64 term = 1;
+
+    string candidate_id = 2;
+
+    uint64 last_log_index = 3;
+
+    uint64 last_log_term = 4;
+}
+
+
+message RequestVoteResponse {
+
+    uint64 term = 1;
+
+    bool vote_granted = 2;
+
+    string voter_id = 3;
+}
+
+
+// ==========================================
+// APPEND ENTRIES RPC
+// ==========================================
+
+message AppendEntriesRequest {
+
+    uint64 term = 1;
+
+    string leader_id = 2;
+
+    uint64 prev_log_index = 3;
+
+    uint64 prev_log_term = 4;
+
+    repeated LogEntry entries = 5;
+
+    uint64 leader_commit = 6;
+}
+
+
+message AppendEntriesResponse {
+
+    uint64 term = 1;
+
+    bool success = 2;
+
+    string follower_id = 3;
+
+    uint64 match_index = 4;
+
+    uint64 conflict_index = 5;
+
+    uint64 conflict_term = 6;
+}
+
+
+// ==========================================
+// INSTALL SNAPSHOT RPC
+// ==========================================
+
+message InstallSnapshotRequest {
+
+    uint64 term = 1;
+
+    string leader_id = 2;
+
+    uint64 last_included_index = 3;
+
+    uint64 last_included_term = 4;
+
+    bytes snapshot_data = 5;
+}
+
+
+message InstallSnapshotResponse {
+
+    uint64 term = 1;
+
+    string follower_id = 2;
+
+    bool success = 3;
+}
+
+
+// ==========================================
+// CLIENT COMMAND SUBMISSION
+// ==========================================
+
+message SubmitCommandRequest {
+
+    string command_id = 1;
+
+    string command_type = 2;
+
+    bytes command_payload = 3;
+
+    string client_id = 4;
+}
+
+
+message SubmitCommandResponse {
+
+    bool success = 1;
+
+    bool committed = 2;
+
+    string leader_id = 3;
+
+    string message = 4;
+
+    string command_id = 5;
+
+    bytes result_payload = 6;
+}
+
+
+// ==========================================
+// CLUSTER STATUS
+// ==========================================
+
+message GetClusterStatusRequest {
+
+    string requester_id = 1;
+}
+
+
+message NodeStatus {
+
+    string node_id = 1;
+
+    string state = 2;
+
+    uint64 current_term = 3;
+
+    uint64 commit_index = 4;
+
+    uint64 last_applied = 5;
+
+    uint64 last_log_index = 6;
+
+    bool reachable = 7;
+
+    string leader_id = 8;
+
+    bool running = 9;
+
+    bool database_connected = 10;
+
+    uint64 heartbeat_age_ms = 11;
+
+    uint64 last_successful_sync_at_ms = 12;
+
+    uint64 last_quorum_at_ms = 13;
+
+    uint32 last_quorum_acknowledgements = 14;
+
+    string cluster_id = 15;
+
+    uint64 cluster_config_version = 16;
+
+    repeated string configured_members = 17;
+
+    string topology_id = 18;
+
+    string configuration_json = 19;
+
+    string replication_progress_json = 20;
+
+    string application_failure = 21;
+
+    string database_name = 22;
+
+    uint32 votes_received = 23;
+}
+
+
+message GetClusterStatusResponse {
+
+    string leader_id = 1;
+
+    uint64 current_term = 2;
+
+    repeated NodeStatus nodes = 3;
+
+    bool has_leader = 4;
+}
+
+
+// ==========================================
+// RAFT SERVICE
+// ==========================================
+
+service RaftService {
+
+    // Leader election
+    rpc RequestVote(RequestVoteRequest)
+        returns (RequestVoteResponse);
+
+    // Heartbeats and log replication
+    rpc AppendEntries(AppendEntriesRequest)
+        returns (AppendEntriesResponse);
+
+    // Snapshot installation
+    rpc InstallSnapshot(InstallSnapshotRequest)
+        returns (InstallSnapshotResponse);
+
+    // Client command submission
+    rpc SubmitCommand(SubmitCommandRequest)
+        returns (SubmitCommandResponse);
+
+    // Cluster monitoring
+    rpc GetClusterStatus(GetClusterStatusRequest)
+        returns (GetClusterStatusResponse);
+}

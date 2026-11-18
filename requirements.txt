@@ -1,0 +1,32 @@
+# Frontend
+streamlit
+
+# REST API
+fastapi>=0.110,<1.0
+uvicorn[standard]>=0.29,<1.0
+python-multipart>=0.0.9,<1.0
+
+# Database
+pymongo
+
+# gRPC Communication
+grpcio>=1.85.1,<2.0
+grpcio-tools>=1.85.1,<2.0
+protobuf>=7.35.1,<8.0
+
+# Authentication
+PyJWT
+bcrypt
+
+# Configuration
+python-dotenv
+pydantic
+tzdata
+
+# Testing
+pytest
+pytest-asyncio
+
+# Utilities
+requests
+groq>=0.9,<1.0
